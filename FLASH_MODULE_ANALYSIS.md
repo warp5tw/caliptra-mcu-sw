@@ -2,7 +2,11 @@
 
 ## Overview
 
-This document provides a comprehensive analysis of the flash module architecture in the Caliptra MCU Software repository. The requested file path `npcm400-main/platforms/nuvoton/npcm400/rom/src/flash/mod.rs` does not currently exist in the repository. However, this analysis covers the existing flash module structure under `platforms/emulator/rom/src/flash/` which can serve as a reference implementation for creating similar platform-specific flash modules, including a potential npcm400 platform.
+This document provides a comprehensive analysis of the flash module architecture in the Caliptra MCU Software repository. 
+
+**Note:** The requested file path `npcm400-main/platforms/nuvoton/npcm400/rom/src/flash/mod.rs` does not currently exist in the repository. 
+
+This analysis covers the existing flash module structure under `platforms/emulator/rom/src/flash/`. The emulator implementation serves as a reference for creating similar platform-specific flash modules, including a potential npcm400 platform.
 
 ## Repository Structure
 
@@ -147,7 +151,7 @@ pub struct FlashPartition<'a> {
 #### Constants
 ```rust
 const PAGE_SIZE: usize = 256;
-const FLASH_MAX_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;  // 64MB
+const FLASH_MAX_PAGES: usize = 64 * 1024 * 1024 / PAGE_SIZE;  // 262,144 pages (64MB total)
 ```
 
 #### Flash Operations
@@ -361,21 +365,24 @@ mcu_rom_common::rom_start(RomParameters {
 ## Memory Map
 
 ```
-Flash Layout (Example):
+Flash Layout (Example - offsets may vary by configuration):
 ┌─────────────────────────┐ 0x00000000
 │  Partition Table        │
-├─────────────────────────┤
-│  ...                    │
-├─────────────────────────┤ IMAGE_A_PARTITION.offset
+│  (PARTITION_TABLE)      │
+├─────────────────────────┤ 0x00001000 (example)
+│  Reserved / Other       │
+├─────────────────────────┤ 0x00100000 (example - IMAGE_A_PARTITION.offset)
 │  Image A (Primary)      │
-├─────────────────────────┤
-│  ...                    │
-├─────────────────────────┤ IMAGE_B_PARTITION.offset
+│                         │
+├─────────────────────────┤ 0x02000000 (example - IMAGE_B_PARTITION.offset)
 │  Image B (Secondary)    │
+│                         │
 ├─────────────────────────┤
-│  ...                    │
-└─────────────────────────┘ 64MB
+│  Reserved / Other       │
+└─────────────────────────┘ 0x04000000 (64MB)
 ```
+
+**Note:** The actual partition offsets and sizes are defined in the platform-specific configuration (e.g., `mcu_config_emulator::flash`).
 
 ## Dependencies
 
